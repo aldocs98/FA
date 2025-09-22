@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Un ramillete amarillo para ti</title>
+  <meta name="description" content="Un detalle virtual inspirado en flores amarillas, hecho con HTML/CSS/JS." />
+  <style>
+    :root {
+      --bg1: #fffbe6; /* crema suave */
+      --bg2: #fdf4c4; /* amarillo pálido */
+      --ink: #3a3a3a;
+      --accent: #ffd028; /* amarillo girasol */
+      --accent-deep: #f4b700;
+      --leaf: #3fb375;
+      --leaf-deep: #2f8c5a;
+      --paper: #ffffff;
+      --shadow: 0 20px 40px rgba(0,0,0,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg1: #121212;
+        --bg2: #1c1c10;
+        --ink: #f3f3f3;
+        --paper: #191919;
+        --shadow: 0 20px 50px rgba(0,0,0,.5);
+      }
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background: radial-gradient(1200px 800px at 20% 10%, var(--bg2), var(--bg1));
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .wrap {
+      width: min(920px, 92vw);
+      display: grid;
+      gap: 20px;
+      padding: 20px;
+    }
+    .card {
+      background: var(--paper);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 4vw, 28px);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: .3px;
+      line-height: 1.1;
+      font-size: clamp(22px, 3.8vw, 36px);
+    }
+    header p {
+      margin: 6px 0 0 0;
+      opacity: .75;
+      font-size: clamp(14px, 2.3vw, 16px);
+    }
+    .bouquet {
+      width: 100%;
+      display: grid;
+      place-items: center;
+      margin: 8px 0 0 0;
+    }
+    svg { width: min(620px, 90vw); height: auto; display: block; }
+
+    /* Animaciones */
+    @keyframes sway {
+      0%,100% { transform: rotate(-2deg) translateY(0); }
+      50% { transform: rotate(2deg) translateY(-2px); }
+    }
+    @keyframes bloom {
+      0% { transform: scale(.2) rotate(-10deg); opacity: 0; }
+      60% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); }
+    }
+    @keyframes float-up {
+      0% { transform: translateY(0) translateX(0); opacity: .0; }
+      10% { opacity: .9; }
+      100% { transform: translateY(-120vh) translateX(var(--dx, 0)); opacity: 0; }
+    }
+
+    .stem { transform-origin: bottom center; animation: sway 6s ease-in-out infinite; }
+    .flower { transform-origin: center; animation: bloom 1.2s ease-out backwards; }
+    .flower:nth-of-type(2) { animation-delay: .12s }
+    .flower:nth-of-type(3) { animation-delay: .22s }
+    .flower:nth-of-type(4) { animation-delay: .32s }
+    .flower:nth-of-type(5) { animation-delay: .42s }
+
+    .note {
+      background: linear-gradient(180deg, #fff8d6, #fff2a3);
+      border: 1px solid rgba(0,0,0,.05);
+      color: #3a3200;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: clamp(14px, 2.4vw, 16px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08) inset;
+    }
+    .note strong { color: #5a4b00; }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      appearance: none;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+      color: #1d1800;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(244, 183, 0, .35);
+      transition: transform .15s ease, filter .2s ease;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    button:active { transform: translateY(0); filter: brightness(.98); }
+
+    .signature { font-size: 12px; opacity: .6; text-align: center; margin-top: 4px; }
+
+    /* Pétalos flotantes */
+    .petal {
+      position: fixed;
+      top: 100vh;
+      left: 50%;
+      width: 12px; height: 12px;
+      background: radial-gradient(circle at 30% 30%, #fff5b1, var(--accent));
+      border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%;
+      opacity: .9;
+      pointer-events: none;
+      animation: float-up linear forwards;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
+      z-index: 0;
+    }
+    .confetti { position: absolute; inset: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <h1 id="title">Un ramillete amarillo para ti</h1>
+        <p id="subtitle">Una forma sencilla de decir: gracias por existir.</p>
+      </header>
+
+      <div class="bouquet">
+        <!-- Bouquet en SVG (flores amarillas y hojas) -->
+        <svg viewBox="0 0 600 520" role="img" aria-label="Ramillete de flores amarillas">
+          <defs>
+            <radialGradient id="gold" cx="50%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="#fff9c9"/>
+              <stop offset="60%" stop-color="#ffd028"/>
+              <stop offset="100%" stop-color="#f4b700"/>
+            </radialGradient>
+            <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--leaf)"/>
+              <stop offset="100%" stop-color="var(--leaf-deep)"/>
+            </linearGradient>
+            <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="0.6"/>
+            </filter>
+            <g id="petals">
+              <ellipse rx="26" ry="48" fill="url(#gold)" />
+            </g>
+            <g id="flower">
+              <g class="flower">
+                <use href="#petals" transform="rotate(0) translate(0,-32)"/>
+                <use href="#petals" transform="rotate(60) translate(0,-32)"/>
+                <use href="#petals" transform="rotate(120) translate(0,-32)"/>
+                <use href="#petals" transform="rotate(180) translate(0,-32)"/>
+                <use href="#petals" transform="rotate(240) translate(0,-32)"/>
+                <use href="#petals" transform="rotate(300) translate(0,-32)"/>
+                <circle r="16" fill="#7a4b00" filter="url(#soft)"/>
+                <circle r="9" fill="#ffef9b" />
+              </g>
+            </g>
+          </defs>
+
+          <!-- tallos -->
+          <g transform="translate(300,420)">
+            <g class="stem" style="animation-delay:.0s">
+              <path d="M0 0 C -10 -40, -15 -120, -8 -200" stroke="#2f8c5a" stroke-width="6" fill="none"/>
+              <g transform="translate(-8,-210)"><use href="#flower"/></g>
+            </g>
+            <g class="stem" style="animation-delay:.25s">
+              <path d="M0 0 C 5 -50, 10 -140, 6 -240" stroke="#2f8c5a" stroke-width="6" fill="none"/>
+              <g transform="translate(6,-250) scale(1.1)"><use href="#flower"/></g>
+            </g>
+            <g class="stem" style="animation-delay:.4s">
+              <path d="M0 0 C -4 -40, -5 -110, 0 -180" stroke="#2f8c5a" stroke-width="6" fill="none"/>
+              <g transform="translate(0,-190) scale(.95)"><use href="#flower"/></g>
+            </g>
+
+            <!-- hojas -->
+            <g fill="url(#leafGrad)" filter="url(#soft)">
+              <path d="M-8 -120 C -80 -110, -90 -60, -16 -40 C -60 -78, -38 -95, -8 -120" />
+              <path d="M14 -160 C 90 -150, 100 -90, 18 -70 C 64 -110, 44 -136, 14 -160" />
+              <path d="M-2 -60 C -60 -50, -70 0, -6 12 C -42 -20, -26 -40, -2 -60" />
+              <path d="M6 -90 C 70 -78, 80 -30, 10 -20 C 52 -50, 36 -70, 6 -90" />
+            </g>
+
+            <!-- moño -->
+            <g transform="translate(0,0)">
+              <path d="M -16 6 C -40 -10, -58 -10, -70 8 C -54 12, -40 26, -22 22 Z" fill="#ffcf4a"/>
+              <path d="M 16 6 C 40 -10, 58 -10, 70 8 C 54 12, 40 26, 22 22 Z" fill="#ffcf4a"/>
+              <circle cx="0" cy="10" r="10" fill="#f4b700"/>
+              <path d="M-4 20 C -8 44, -10 66, -18 86" stroke="#e2a700" stroke-width="6"/>
+              <path d="M4 20 C 8 44, 10 66, 18 86" stroke="#e2a700" stroke-width="6"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="note" id="message">
+        <strong>Flores amarillas</strong> porque simbolizan luz y calidez. Ojalá te regalen un ratito de alegría hoy.
+      </div>
+
+      <div class="controls">
+        <button id="reveal">Abrir tarjeta ✨</button>
+        <button id="share">Compartir</button>
+        <button id="petals">Más pétalos</button>
+      </div>
+
+      <div class="signature" id="sig"></div>
+      <div class="confetti" id="confetti"></div>
+    </div>
+  </div>
+
+  <script>
+    // === PERSONALIZA AQUÍ ===
+    // Puedes cambiar estos valores o pasarlos por URL, ej.: ?para=Camilla&mensaje=Feliz%20día&de=Aldo
+    const CONFIG = {
+      para: 'Camilla Nicolle Pizarro Monroy',
+      mensaje: 'Flores amarillas para desearte un día suavecito y luminoso. 🌼',
+      de: 'Aldo',
+      pie: 'Hecho con HTML, CSS y un montón de cariño xd.'
+    };
+
+    // Lee parámetros de la URL si existen
+    const params = new URLSearchParams(location.search);
+    if (params.has('para')) CONFIG.para = params.get('para');
+    if (params.has('mensaje')) CONFIG.mensaje = params.get('mensaje');
+    if (params.has('de')) CONFIG.de = params.get('de');
+
+    // Pone textos
+    const title = document.getElementById('title');
+    const subtitle = document.getElementById('subtitle');
+    const message = document.getElementById('message');
+    const sig = document.getElementById('sig');
+
+    title.textContent = `Para ${CONFIG.para}`;
+    subtitle.textContent = 'Un detalle amarillo para un día especial';
+    message.textContent = CONFIG.mensaje;
+    sig.textContent = `— ${CONFIG.de} · ${new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' })} · ${CONFIG.pie}`;
+
+    // Interacciones
+    const revealBtn = document.getElementById('reveal');
+    const shareBtn  = document.getElementById('share');
+    const petalsBtn = document.getElementById('petals');
+
+    // Transición suave al abrir la tarjeta
+    revealBtn.addEventListener('click', () => {
+      message.animate([
+        { transform: 'scale(.98)', opacity: .5 },
+        { transform: 'scale(1)', opacity: 1 }
+      ], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      burstPetals(28);
+    });
+
+    // Share API si está disponible
+    shareBtn.addEventListener('click', async () => {
+      const url = new URL(location.href);
+      url.searchParams.set('para', CONFIG.para);
+      url.searchParams.set('mensaje', CONFIG.mensaje);
+      url.searchParams.set('de', CONFIG.de);
+
+      const shareData = {
+        title: `Para ${CONFIG.para}`,
+        text: CONFIG.mensaje + `\n\n— ${CONFIG.de}`,
+        url: url.toString()
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          await navigator.clipboard.writeText(url.toString());
+          shareBtn.textContent = 'Enlace copiado ✅';
+          setTimeout(() => shareBtn.textContent = 'Compartir', 1800);
+        }
+      } catch(e) {
+        console.log(e);
+      }
+    });
+
+    petalsBtn.addEventListener('click', () => burstPetals(20));
+
+    // Pétalos flotando
+    function createPetal(x) {
+      const p = document.createElement('span');
+      p.className = 'petal';
+      const size = 8 + Math.random()*18;
+      p.style.width = size + 'px';
+      p.style.height = size * 0.9 + 'px';
+      p.style.left = (x ?? Math.random()*100) + 'vw';
+      p.style.animationDuration = (6 + Math.random()*5) + 's';
+      p.style.setProperty('--dx', ((Math.random()-.5)*40) + 'vw');
+      document.body.appendChild(p);
+      p.addEventListener('animationend', () => p.remove());
+    }
+
+    function burstPetals(n=14) {
+      const mid = Math.random()*60 + 20; // centro aleatorio
+      for (let i=0; i<n; i++) setTimeout(() => createPetal(mid + (Math.random()*20-10)), i*60);
+    }
+
+    // Lluvia inicial muy sutil
+    setTimeout(() => burstPetals(16), 400);
+  </script>
+</body>
+</html>
