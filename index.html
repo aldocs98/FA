@@ -90,7 +90,8 @@
       background: radial-gradient(circle at 30% 30%, #fff5b1, var(--accent));
       border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%;
       opacity: .9; pointer-events: none; animation: float-up linear forwards;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,.08)); z-index: 0;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
+      z-index: 1000; /* aseguramos que queden por encima */
     }
     .confetti { position: absolute; inset: 0; pointer-events: none; }
 
@@ -107,9 +108,12 @@
   <div class="wrap">
     <div class="card">
       <header>
-        <h1 id="title">Un regalo para ti</h1>
+        <h1 id="title">Un ramillete amarillo para ti</h1>
         <p id="subtitle">Una forma sencilla de decir: gracias por existir.</p>
       </header>
+
+      <!-- Foto: se mostrará al hacer clic en "Abrir tarjeta" -->
+      <img id="photo" alt="Foto especial" />
 
       <div class="bouquet">
         <!-- Bouquet en SVG (flores amarillas y hojas) -->
@@ -124,10 +128,10 @@
               <stop offset="0%" stop-color="var(--leaf)"/>
               <stop offset="100%" stop-color="var(--leaf-deep)"/>
             </linearGradient>
-            <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+            <filter id="soft" x="-20%" y="-20%" width="140%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="0.6"/>
             </filter>
-            <!-- ⚠️ Renombrado para evitar colisión con el botón -->
+            <!-- Renombrado para evitar colisión con el botón -->
             <g id="petalShape">
               <ellipse rx="26" ry="48" fill="url(#gold)" />
             </g>
@@ -184,9 +188,6 @@
         <strong>Flores amarillas</strong> porque simbolizan luz y calidez. Ojalá te regalen un ratito de alegría hoy.
       </div>
 
-      <!-- Foto: se mostrará al hacer clic en "Abrir tarjeta" -->
-      <img id="photo" alt="Foto especial" />
-
       <div class="controls">
         <button id="reveal">Abrir tarjeta ✨</button>
         <button id="petals">Más pétalos</button>
@@ -199,28 +200,27 @@
 
   <script>
     // === PERSONALIZA AQUÍ ===
-    // Puedes cambiar estos valores o pasarlos por URL, ej.: ?para=Camilla&mensaje=Feliz%20día&de=Aldo&foto=https%3A%2F%2Fejemplo.com%2Fimagen.jpg
     const CONFIG = {
       para: 'Camilla Nicolle Pizarro Monroy',
       mensaje: 'Flores amarillas para desearte un día luminoso. 🌼',
       de: 'Aldo',
       pie: 'Hecho con HTML, CSS y un montón de cariño xd.',
-      foto: 'assets/CNPMIA.png' // <- pega aquí la URL de tu imagen si quieres
+      foto: 'assets/CNPMIA.jpg'
     };
 
     // Lee parámetros de la URL si existen
     const params = new URLSearchParams(location.search);
-    if (params.has('para')) CONFIG.para = params.get('para');
-    if (params.has('mensaje')) CONFIG.mensaje = params.get('mensaje');
-    if (params.has('de')) CONFIG.de = params.get('de');
-    if (params.has('foto')) CONFIG.foto = params.get('foto');
+    if (params.has('para'))   CONFIG.para   = params.get('para');
+    if (params.has('mensaje'))CONFIG.mensaje= params.get('mensaje');
+    if (params.has('de'))     CONFIG.de     = params.get('de');
+    if (params.has('foto'))   CONFIG.foto   = params.get('foto');
 
     // Pone textos
-    const title = document.getElementById('title');
-    const subtitle = document.getElementById('subtitle');
+    const title   = document.getElementById('title');
+    const subtitle= document.getElementById('subtitle');
     const message = document.getElementById('message');
-    const sig = document.getElementById('sig');
-    const photo = document.getElementById('photo');
+    const sig     = document.getElementById('sig');
+    const photo   = document.getElementById('photo');
 
     title.textContent = `Para ${CONFIG.para}`;
     subtitle.textContent = 'Un detalle amarillo para un día especial';
@@ -228,57 +228,35 @@
     sig.textContent = `— ${CONFIG.de} · ${new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' })} · ${CONFIG.pie}`;
 
     // Si hay foto, setea el src pero no la muestra aún
-    if (CONFIG.foto) {
-      photo.src = CONFIG.foto;
-    }
+    if (CONFIG.foto) photo.src = CONFIG.foto;
 
-    // Interacciones
+    // Interacciones (defensivas por si quitas botones)
     const revealBtn = document.getElementById('reveal');
-    const petalsBtn = document.getElementById('petals'); // ahora sí es el botón (no el <g> del SVG)
+    const petalsBtn = document.getElementById('petals');
 
-    // Transición suave al abrir la tarjeta + pétalos + mostrar foto
-    revealBtn.addEventListener('click', () => {
-      message.animate(
-        [{ transform: 'scale(.98)', opacity: .5 }, { transform: 'scale(1)', opacity: 1 }],
-        { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }
-      );
-      burstPetals(28);
-
-      // Mostrar la foto si hay src
-      if (photo && photo.src) {
-        photo.style.display = 'block';
-        photo.animate(
-          [{ transform: 'scale(.98)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }],
+    if (revealBtn) {
+      revealBtn.addEventListener('click', () => {
+        message.animate(
+          [{ transform: 'scale(.98)', opacity: .5 }, { transform: 'scale(1)', opacity: 1 }],
           { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }
         );
-      }
-    });
+        burstPetals(28);
 
-    // Share API si está disponible
-    shareBtn.addEventListener('click', async () => {
-      const url = new URL(location.href);
-      url.searchParams.set('para', CONFIG.para);
-      url.searchParams.set('mensaje', CONFIG.mensaje);
-      url.searchParams.set('de', CONFIG.de);
-      if (CONFIG.foto) url.searchParams.set('foto', CONFIG.foto);
-
-      const shareData = {
-        title: `Para ${CONFIG.para}`,
-        text: CONFIG.mensaje + `\n\n— ${CONFIG.de}`,
-        url: url.toString()
-      };
-      try {
-        if (navigator.share) {
-          await navigator.share(shareData);
-        } else {
-          await navigator.clipboard.writeText(url.toString());
-          shareBtn.textContent = 'Enlace copiado ✅';
-          setTimeout(() => shareBtn.textContent = 'Compartir', 1800);
+        // Mostrar la foto si hay src
+        if (photo && photo.src) {
+          photo.style.display = 'block';
+          photo.animate(
+            [{ transform: 'scale(.98)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }],
+            { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }
+          );
+          photo.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      } catch(e) { console.log(e); }
-    });
+      });
+    }
 
-    petalsBtn.addEventListener('click', () => burstPetals(20));
+    if (petalsBtn) {
+      petalsBtn.addEventListener('click', () => burstPetals(20));
+    }
 
     // Pétalos flotando
     function createPetal(x) {
